@@ -10,6 +10,7 @@ prepare_test_env:
 test:
 	black . --check
 	flake8 app tests
+	mypy --ignore-missing-imports app tests
 	pytest	
 
 destory_test_env:

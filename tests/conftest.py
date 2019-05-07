@@ -1,8 +1,6 @@
 import os
 
 import pytest
-from flask.testing import FlaskClient
-from flask import Flask
 
 
 def pytest_configure():
@@ -11,14 +9,14 @@ def pytest_configure():
 
 
 @pytest.fixture()
-def app() -> Flask:
+def app():
     from app import app
 
     yield app
 
 
 @pytest.fixture()
-def client(app) -> FlaskClient:
+def client(app):
     yield app.test_client()
 
 
