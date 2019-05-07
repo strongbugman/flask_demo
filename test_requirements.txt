@@ -4,3 +4,4 @@ openapi_spec_validator>=0.2.4
 flake8
 mypy
 black
+codecov

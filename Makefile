@@ -6,6 +6,8 @@ prepare_test_env:
 	sleep 20 # waiting for services ready
 	docker exec -ti test_mysql mysql -u root -ptoor333666 -e 'create database flask_demo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
 	docker exec -ti test_mysql mysql -u root -ptoor333666 -e 'create database flask_demo_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+	pip install -U -r requirements.txt
+	pip install -U -r test_requirements.txt
 
 test:
 	black . --check
