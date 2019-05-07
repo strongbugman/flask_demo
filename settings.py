@@ -15,4 +15,5 @@ if ENV == "testing":
 elif ENV == "development":
     logging.basicConfig(level=logging.DEBUG)
 else:
+    DB["echo"] = False
     logging.basicConfig(level=logging.WARNING)

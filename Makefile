@@ -15,5 +15,8 @@ test:
 	mypy --ignore-missing-imports app tests
 	pytest	
 
+server:
+	export FLASK_ENV=production && gunicorn app:app -c gunicorn.py
+
 destory_test_env:
 	docker stop test_mysql test_redis
