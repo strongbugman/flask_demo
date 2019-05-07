@@ -1,8 +1,7 @@
 from flask.views import MethodView
 from flask import request, Response
 
-from app import models as m
-from app import utils
+from app import models as m, utils, exceptions as excs
 
 
 class CatView(MethodView):
@@ -10,6 +9,15 @@ class CatView(MethodView):
         return utils.JSONResponse(
             m.Cat.get_dict(utils.parse_id(request.args.get("id")))
         )
+
+    def put(self):
+        data = utils.get_json(request)
+        cat = m.Cat(**data)
+        if not cat.id:
+            raise excs.InvalidId()
+        else:
+            cat.save()
+            return utils.JSONResponse(cat.dict())
 
     def delete(self):
         m.Cat.delete(utils.parse_id(request.args.get("id")))

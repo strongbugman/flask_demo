@@ -31,6 +31,12 @@ def test_cat(client, db):
     assert res.status_code == 200
     for k, v in data.items():
         assert res.json[k] == v
+    # update
+    data["id"] = cat2_id
+    data["age"] += 1
+    res = client.put(f"/{settings.PROJECT_NAME}/api/cat/", json=data)
+    assert res.status_code == 200
+    assert res.json["age"] == data["age"]
     # list
     res = client.get(f"/{settings.PROJECT_NAME}/api/cats/")
     assert res.status_code == 200
