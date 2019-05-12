@@ -1,9 +1,8 @@
 from flask import Blueprint
 
-import settings
 from .views import CatView, CatsView
 
-api = Blueprint("api", __name__, url_prefix=f"/{settings.PROJECT_NAME}/api")
+api = Blueprint("api", __name__, url_prefix=f"/api")
 
 
 api.add_url_rule("/cat/", view_func=CatView.as_view(name="cat"))

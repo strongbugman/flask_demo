@@ -1,6 +1,3 @@
-import settings
-
-
 def test_health(client):
-    res = client.get(f"/{settings.PROJECT_NAME}/health/")
+    res = client.get(f"/health/")
     assert res.status_code == 200

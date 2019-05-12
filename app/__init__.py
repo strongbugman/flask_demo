@@ -9,7 +9,7 @@ from .extensions import EXTENSIONS
 app = Flask(settings.PROJECT_NAME)
 
 
-@app.route(f"/{settings.PROJECT_NAME}/health/", methods=("GET",))
+@app.route(f"/health/", methods=("GET",))
 def health():
     return "OK"
 

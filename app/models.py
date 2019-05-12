@@ -3,9 +3,9 @@ from datetime import datetime
 
 from pydantic import BaseModel as _BaseModel, ValidationError
 from pydantic.error_wrappers import ErrorWrapper
+from sqlalchemy.sql import text
 
 from . import extensions as exts
-from . import exceptions as excs
 
 
 M = typing.TypeVar("M", bound="Base")
@@ -56,14 +56,14 @@ CREATE TABLE base (
 
     @classmethod
     def get(cls: typing.Type[M], _id: int) -> M:
-        try:
-            result = (
-                exts.db.fetch(
-                    f"SELECT {','.join(cls.__fields__.keys())} FROM {cls.__name__.lower()} WHERE id = {exts.db.parse(_id)};"
-                )
-            )[0]
-        except IndexError as e:
-            raise excs.NotFound() from e
+        result = (
+            exts.db.fetch(
+                text(
+                    f"SELECT {','.join(cls.__fields__.keys())} FROM {cls.__name__.lower()} WHERE id=:_id;"
+                ),
+                _id=_id,
+            )
+        )[0]
 
         return cls(**result)
 
@@ -74,14 +74,17 @@ CREATE TABLE base (
     @classmethod
     def delete(cls, _id: int) -> None:
         exts.db.execute(
-            f"DELETE FROM {cls.__name__.lower()} WHERE id = {exts.db.parse(_id)}"
+            text(f"DELETE FROM {cls.__name__.lower()} WHERE id=:_id"), _id=_id
         )
 
     @classmethod
     def list(cls: typing.Type[M], page: int = 1, count: int = 20) -> typing.List[M]:
         results = exts.db.fetch(
-            f"SELECT {','.join(cls.__fields__.keys())} FROM {cls.__name__.lower()} ORDER BY id ASC "
-            f"LIMIT {exts.db.parse(count)} OFFSET {(page - 1) * count}"
+            text(
+                f"SELECT {','.join(cls.__fields__.keys())} FROM {cls.__name__.lower()} ORDER BY id ASC LIMIT :count OFFSET :offset"
+            ),
+            count=count,
+            offset=(page - 1) * count,
         )
         return [cls(**result) for result in results]
 

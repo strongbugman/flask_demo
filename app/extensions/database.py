@@ -1,85 +1,61 @@
 import typing
-import enum
-from collections import Sequence
 from functools import wraps
-from datetime import datetime
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.engine.result import ResultProxy, RowProxy
+from sqlalchemy.engine.result import RowProxy
+from sqlalchemy.sql import text
+from sqlalchemy.sql.elements import TextClause
 
 from .base import Extension
-
-
-Field = typing.Union[int, float, bool, str, None, enum.Enum, datetime]
+from app import exceptions as excs
 
 
 class DBExtension(Extension):
-    INSERT_SQL = "INSERT INTO {table:s} ({columns:s}) VALUES ({values:s});"
-    UPDATE_SQL = "UPDATE {table:s} SET {data:s} WHERE {condition:s};"
-    INJECTION_CHARS = ("'", '"', "`", "\\")
-
     def __init__(self, db_url: str, config: typing.Dict[str, typing.Any]):
         super().__init__()
         self.engine: Engine = create_engine(db_url, **config)
 
-    @classmethod
-    def parse(cls, value: Field) -> str:
-        """Parse value to str for making sql string, eg: False -> '0'
-        """
-        if isinstance(value, bool):
-            return "1" if value else "0"
-        elif isinstance(value, str):
-            for c in cls.INJECTION_CHARS:
-                value = value.replace(c, "\\" + c)
-            return "'{:s}'".format(value)
-        elif value is None:
-            return "NULL"
-        elif isinstance(value, Sequence):
-            return f"'{{{','.join(cls.parse(v) for v in value)}}}'"
-        elif isinstance(value, enum.Enum):
-            return str(value.value)
-        elif isinstance(value, (int, float)):
-            return str(value)
-        elif isinstance(value, datetime):
-            return f"'{value}'"
-        else:
-            raise ValueError(f"Value {value.__class__}-{value} is not support!")
+    def execute(self, sql: TextClause, **params) -> None:
+        self.engine.execute(sql, **params)
 
-    def execute(self, sql: str) -> None:
-        self.engine.execute(sql)
+    def fetch(self, sql: TextClause, **params) -> typing.List[RowProxy]:
+        res = self.engine.execute(sql, **params).fetchall()
+        if not res:
+            raise excs.NotFound()
+        return res
 
-    def fetch(self, sql) -> typing.List[RowProxy]:
-        res: ResultProxy = self.engine.execute(sql)
-        return res.fetchall()
-
-    def insert(self, table: str, data: typing.Dict[str, Field]) -> int:
-        assert data
-
-        keys = data.keys()
-        values = data.values()
-        sql = self.INSERT_SQL.format(
-            table=table.lower(),
-            columns=", ".join(list(keys)),
-            values=", ".join([f"{self.parse(value)}" for value in values]),
+    def insert(self, table: str, data: typing.Dict[str, typing.Any]) -> int:
+        sql = text(
+            "INSERT INTO {table:s} ({columns:s}) VALUES ({values:s});".format(
+                table=table.lower(),
+                columns=", ".join(data),
+                values=", ".join([f":{k}" for k in data]),
+            )
         )
 
         with self.engine.begin():
-            self.execute(sql)
+            self.execute(sql, **data)
             return self.fetch("SELECT LAST_INSERT_ID()")[0][0]
 
-    def update(self, table: str, data: typing.Dict[str, Field], **condition: Field):
+    def update(
+        self, table: str, data: typing.Dict[str, typing.Any], **condition: typing.Any
+    ):
         assert data
 
-        sql = self.UPDATE_SQL.format(
-            table=table.lower(),
-            data=", ".join((f"{k}={self.parse(v)}" for k, v in data.items())),
-            condition=", ".join((f"{k}={self.parse(v)}" for k, v in condition.items())),
+        sql = text(
+            "UPDATE {table:s} SET {data:s} WHERE {condition:s};".format(
+                table=table.lower(),
+                data=", ".join((f"{k}=:{k}" for k in data)),
+                condition=", ".join((f"{k}=:{k}" for k in condition)),
+            )
         )
-        self.execute(sql)
+        self.execute(sql, **data, **condition)
 
-    def count(self, table: str, **condition: Field) -> int:
-        sql = f"SELECT COUNT(*) FROM {table} WHERE {', '.join((f'{k}={self.parse(v)}' for k, v in condition.items()))};"
+    def count(self, table: str, **condition: typing.Any) -> int:
+        sql = text(
+            f"SELECT COUNT(*) FROM {table} WHERE {', '.join((f'{k}=:{k}' for k in condition))};"
+        )
 
         return self.fetch(sql)[0][0]
 
