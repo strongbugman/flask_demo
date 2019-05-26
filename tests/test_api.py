@@ -1,4 +1,11 @@
+from openapi_spec_validator import validate_v3_spec
+
 from app import models as m
+from app.extensions import apiman
+
+
+def test_apiman():
+    validate_v3_spec(apiman.specification)
 
 
 def test_cat(client, db):

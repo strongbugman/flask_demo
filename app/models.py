@@ -120,3 +120,21 @@ CREATE TABLE cat (
 
 
 MODELS = {Cat}
+
+
+for m_cls in MODELS:
+    exts.apiman.add_schema(m_cls.__name__, m_cls.schema())
+    exts.apiman.add_schema(
+        f"{m_cls.__name__}s",
+        {
+            "type": "object",
+            "properties": {
+                "objects": {
+                    "type": "array",
+                    "items": {"$ref": f"#/components/schemas/{m_cls.__name__}"},
+                },
+                "page": {"type": "integer"},
+                "count": {"type": "integer"},
+            },
+        },
+    )

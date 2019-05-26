@@ -7,10 +7,19 @@ from .extensions import EXTENSIONS
 
 
 app = Flask(settings.PROJECT_NAME)
+app.config.from_object(settings)
 
 
 @app.route(f"/health/", methods=("GET",))
 def health():
+    """
+    summary: Service health
+    tags:
+    - health
+    responses:
+        200:
+            description: OK
+    """
     return "OK"
 
 

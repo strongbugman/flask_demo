@@ -4,12 +4,9 @@ from flask import Flask
 
 
 class Extension:
-    def __init__(self):
-        self.app: typing.Optional[Flask] = None
+    def __init__(self, app: typing.Optional[Flask] = None):
+        self.app = app
+        self.init_app(self.app) if self.app else None
 
     def init_app(self, app: Flask):
-        self.app = app
-        self.startup()
-
-    def startup(self):
-        pass
+        app.extensions[self.__class__.__name__.lower().replace("extension", "")] = self

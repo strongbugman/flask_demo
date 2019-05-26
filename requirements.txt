@@ -1,4 +1,5 @@
 flask
+apiman
 sqlalchemy
 pydantic
 ujson

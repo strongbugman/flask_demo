@@ -1,0 +1,5 @@
+openapi: "3.0.0"
+info:
+  title: 'Flask Demo'
+  version: '0.1'
+  description: 'Flask demo API manual'

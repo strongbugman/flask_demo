@@ -1,0 +1,17 @@
+summary: Create one cat
+tags:
+- cats
+requestBody:
+  description: Field `id` will be ignored!
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Cat'
+responses:
+  "201":
+    description: OK
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Cat'
