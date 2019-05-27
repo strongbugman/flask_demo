@@ -7,7 +7,7 @@ DEBUG = os.environ.get("FLASK_ENV", default="true") in ("t", "true")
 PROJECT_NAME = "flask_demo"
 
 # extensions
-DB_URL = f"mysql://root:letmein@127.0.0.1/{PROJECT_NAME}?charset=utf8mb4"
+DB_URL = f"mysql+pymysql://root:letmein@127.0.0.1/{PROJECT_NAME}?charset=utf8mb4"
 DB_CONFIG = dict(echo=True, echo_pool=True, pool_size=10)
 
 APIMAN_TEMPLATE = "./docs/template.yml"

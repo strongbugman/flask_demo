@@ -4,4 +4,4 @@ sqlalchemy
 pydantic
 ujson
 gunicorn[gevent]
-mysqlclient
+PyMysql

@@ -1,6 +1,6 @@
 pytest
 pytest-cov
-openapi_spec_validator>=0.2.4
+openapi_spec_validator>=0.2.7
 flake8
 mypy
 black
